@@ -4,11 +4,11 @@ use sdl2::image::{self, InitFlag, LoadTexture};
 use sdl2::pixels::Color;
 use sdl2::rect::{Point, Rect};
 use sdl2::render::{Texture, WindowCanvas, TextureCreator, Canvas};
-use std::time::Duration;
-use std::collections::VecDeque;
 use sdl2::video::{WindowContext, Window};
 
-const PLAYER_MOVEMENT_SPEED: i32 = 1;
+use std::time::Duration;
+use std::collections::VecDeque;
+use rand::prelude::*;
 
 const GRID_SIZE_PX: i32 = 32;
 const H: i32 = 32;
@@ -45,9 +45,21 @@ enum Direction {
 }
 
 #[derive(Debug)]
-struct Player {
+struct Snake {
     positions: VecDeque<Position>, 
     direction: Direction,
+}
+
+#[derive(Debug)]
+struct Food {
+    position: Position
+}
+
+#[derive(Debug)]
+struct GameState {
+    snake: Snake,
+    food: Food,
+    speed: u32
 }
 
 fn dummy_texture<'a>(
@@ -109,40 +121,47 @@ fn dummy_texture<'a>(
     Ok(square_texture)
 }
 
-fn render(canvas: &mut WindowCanvas, color: Color, texture: &Texture, player: &Player) -> Result<(), String> {
+fn draw_square(canvas: &mut WindowCanvas, texture: &Texture, pos: &Position) -> Result<(), String> {
+    // draw rect
+    canvas.copy(
+        texture,
+        None,
+        Rect::new(
+            ((pos.x % W) * GRID_SIZE_PX) as i32,
+            ((pos.y % H) * GRID_SIZE_PX) as i32,
+            GRID_SIZE_PX as u32,
+            GRID_SIZE_PX as u32,
+        ),
+    )?;
+    Ok(())
+}
+
+fn render(canvas: &mut WindowCanvas, color: Color, texture: &Texture, gamestate: &GameState) -> Result<(), String> {
     canvas.set_draw_color(color);
     canvas.clear();
 
-    // TODO: draw each square in the snake at index
-    for pos in player.positions.iter() {
-        // get x and y from pos
-        println!("Coordinates: {} {}", pos.x, pos.y);
-    
+    // Draw each square in the snake at index
+    for pos in gamestate.snake.positions.iter() {    
         // draw rect
-        canvas.copy(
-            texture,
-            None,
-            Rect::new(
-                ((pos.x % W) * GRID_SIZE_PX) as i32,
-                ((pos.y % H) * GRID_SIZE_PX) as i32,
-                GRID_SIZE_PX as u32,
-                GRID_SIZE_PX as u32,
-            ),
-        )?;
+        draw_square(canvas, texture, pos)?;
     }
+
+    // Draw food
+    draw_square(canvas, texture, &gamestate.food.position)?;
+
 
     canvas.present();
 
     Ok(())
 }
 
-fn update_player(player: &mut Player) {
+fn update_snake(mut snake: Snake) -> Snake {
     // Our snake's head is at the end of the vec
     // [tail, ..., head]
     use self::Direction::*;
-    let head_index: usize = player.positions.len();
-    let mut head = player.positions[head_index - 1].clone();
-    match player.direction {
+    let head_index: usize = snake.positions.len();
+    let mut head = snake.positions[head_index - 1].clone();
+    match snake.direction {
         Left => {
             head = head.offset(-1, 0);
         },
@@ -156,8 +175,32 @@ fn update_player(player: &mut Player) {
             head = head.offset(0, 1);
         },
     }
-    player.positions.pop_front();
-    player.positions.push_back(head);
+    snake.positions.pop_front();
+    snake.positions.push_back(head);
+    snake
+}
+
+
+fn update_game_state(mut gamestate: GameState, mut event_queue: VecDeque<Direction>) -> GameState {
+
+    // Check if food has overlap with snake
+    if gamestate.snake.positions.contains(&gamestate.food.position) {
+        gamestate.snake.positions.push_front(Position::new(0,0));
+        let mut rng = rand::thread_rng();
+        gamestate.food.position = Position::new(
+            rng.gen_range(0..W),
+            rng.gen_range(0..H)
+        );
+    }
+
+    // Get most recent input event
+    match event_queue.pop_back() {
+        Some(direction) => gamestate.snake.direction = direction,
+        None => {}
+    }
+    gamestate.snake = update_snake(gamestate.snake);
+    gamestate.speed = 5 + (gamestate.snake.positions.len() / 3) as u32;
+    gamestate
 }
 
 fn main() -> Result<(), String> {
@@ -178,17 +221,26 @@ fn main() -> Result<(), String> {
     let texture_creator: TextureCreator<_> = canvas.texture_creator();
     let square_texture = dummy_texture(&mut canvas, &texture_creator)?;
 
-
-    let mut player = Player { 
-        positions: VecDeque::from([Position::new(W / 2, H / 2)]), 
-        direction: Direction::Right,
+    let mut rng = rand::thread_rng();
+    let mut gamestate = GameState {
+        snake: Snake { 
+            positions: VecDeque::from([Position::new(W / 2, H / 2)]), 
+            direction: Direction::Right,
+        },
+        food: Food {
+            position: Position::new(
+                rng.gen_range(0..W),
+                rng.gen_range(0..H)
+            )
+        },
+        speed: 5
     };
-
 
     let mut event_pump = sdl_context.event_pump()?;
 
     // 'running is a lifetime annotation
     'running: loop {
+        let mut event_queue : VecDeque<Direction> = VecDeque::new();
         for event in event_pump.poll_iter() {
             match event {
                 Event::Quit { .. } |
@@ -196,16 +248,16 @@ fn main() -> Result<(), String> {
                     break 'running; 
                 },
                 Event::KeyDown { keycode: Some(Keycode::Left),  .. } => {
-                    player.direction = Direction::Left;
+                    event_queue.push_back(Direction::Left);
                 },
                 Event::KeyDown { keycode: Some(Keycode::Right),  .. } => {
-                    player.direction = Direction::Right;
+                    event_queue.push_back(Direction::Right);
                 },
                 Event::KeyDown { keycode: Some(Keycode::Up),  .. } => {
-                    player.direction = Direction::Up;
+                    event_queue.push_back(Direction::Up);
                 },
                 Event::KeyDown { keycode: Some(Keycode::Down),  .. } => {
-                    player.direction = Direction::Down;
+                    event_queue.push_back(Direction::Down);
                 },
                 Event::KeyUp { keycode: Some(Keycode::Left), repeat: false, .. } |
                 Event::KeyUp { keycode: Some(Keycode::Right), repeat: false, .. } |
@@ -216,13 +268,13 @@ fn main() -> Result<(), String> {
         }
 
         // Update
-        update_player(&mut player);
+        gamestate = update_game_state(gamestate, event_queue);
 
         // Render
-        render(&mut canvas, Color::RGB(0, 0, 0), &square_texture, &player)?;
+        render(&mut canvas, Color::RGB(0, 0, 0), &square_texture, &gamestate)?;
 
         // Time Management
-        ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 5));
+        ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / gamestate.speed));
     }
     Ok(())
 }
