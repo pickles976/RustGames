@@ -1,6 +1,16 @@
 Follow this guide
-- [ ] https://sunjay.dev/learn-game-dev/getting-started.html
-	- [ ] https://sunjay.dev/learn-game-dev/adding-ecs.html
+- [x] https://sunjay.dev/learn-game-dev/getting-started.html
+	- [x] https://sunjay.dev/learn-game-dev/adding-ecs.html
 - [ ] create snake game
+	- [x] Get moving head
+	- [x] Get drawing working
+	- [ ] Get food spawning
+	- [ ] Snake growth
+	- [ ] Snake out of bounds
+	- [ ] Game over handling
+	- [ ] Snake self-collision
+	- [ ] Score text
+	- [ ] speed increase as function of length
+	- [ ] Mimic Nokia green and black style
 - [ ] create tetris
 - [ ] 3D demo
