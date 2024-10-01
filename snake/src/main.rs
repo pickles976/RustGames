@@ -14,8 +14,8 @@ use std::time::Duration;
 use crate::dataclasses::{Direction, Food, GameState, Position, Snake};
 
 const GRID_SIZE_PX: i32 = 32;
-const H: i32 = 32;
-const W: i32 = 32;
+const H: i32 = 16;
+const W: i32 = 16;
 
 // fn draw_square<R: Into<Option<Color>>>(canvas: &mut WindowCanvas, pos: &Position, color: R) -> Result<(), String> {
 fn draw_square(canvas: &mut WindowCanvas, pos: &Position) -> Result<(), String> {
@@ -94,7 +94,7 @@ fn update_game_state(mut gamestate: GameState, mut event_queue: VecDeque<Directi
     if gamestate.snake.positions.contains(&gamestate.food.position) {
         gamestate.snake.positions.push_front(Position::new(0, 0));
         let mut rng = rand::thread_rng();
-        gamestate.food.position = Position::new(rng.gen_range(0..W), rng.gen_range(0..H));
+        gamestate.food.position = Position::new(rng.gen_range(1..W-1), rng.gen_range(1..H-1));
     }
 
     // Get most recent input event
@@ -103,7 +103,7 @@ fn update_game_state(mut gamestate: GameState, mut event_queue: VecDeque<Directi
         None => {}
     }
     gamestate.snake = update_snake_position(gamestate.snake);
-    gamestate.speed = 5 + (gamestate.snake.positions.len() / 2) as u32;
+    gamestate.speed = 5 + (gamestate.snake.positions.len() / 3) as u32;
     gamestate
 }
 
