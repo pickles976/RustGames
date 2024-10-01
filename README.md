@@ -10,7 +10,7 @@ Follow this guide
 	- [ ] Game over handling
 	- [ ] Snake self-collision
 	- [ ] Score text
-	- [ ] Mimic Nokia green and black style
+	- [x] Mimic Nokia green and black style
 	- [ ] sound effects
 - [ ] create tetris
 - [ ] 3D demo
