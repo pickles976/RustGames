@@ -6,10 +6,12 @@ Follow this guide
 	- [x] Get food spawning
 	- [x] Snake growth
 	- [x] speed increase as function of length
-	- [ ] Snake out of bounds handling
+	- [x] Snake out of bounds handling
+	- [x] Snake self-collision
 	- [ ] Game over handling
-	- [ ] Snake self-collision
+		- [ ] Show game over text (Press enter to continue)
 	- [ ] Score text
+	- [ ] Implement Pausing
 	- [x] Mimic Nokia green and black style
 	- [ ] sound effects
 - [ ] create tetris

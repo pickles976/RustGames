@@ -1,4 +1,9 @@
 use std::collections::VecDeque;
+use rand::prelude::*;
+
+pub const GRID_SIZE_PX: i32 = 32;
+pub const H: i32 = 16;
+pub const W: i32 = 16;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Position {
@@ -27,6 +32,12 @@ pub enum Direction {
     Right,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum GameState {
+    Running,
+    GameOver
+}
+
 #[derive(Debug)]
 pub struct Snake {
     pub positions: VecDeque<Position>,
@@ -39,8 +50,31 @@ pub struct Food {
 }
 
 #[derive(Debug)]
-pub struct GameState {
+pub struct GameContext {
     pub snake: Snake,
     pub food: Food,
     pub speed: u32,
+    pub state: GameState
+}
+
+impl GameContext {
+    pub fn new() -> GameContext {
+        let mut rng = rand::thread_rng();
+        GameContext {
+            snake: Snake {
+                positions: VecDeque::from([
+                    Position::new(W / 2, H / 2),
+                    Position::new((W / 2) - 1, H / 2),
+                    Position::new((W / 2) - 2, H / 2)
+                ], 
+            ),
+                direction: Direction::Right,
+            },
+            food: Food {
+                position: Position::new(rng.gen_range(0..W), rng.gen_range(0..H)),
+            },
+            speed: 5,
+            state: GameState::Running
+        }
+    }
 }
