@@ -1,19 +1,24 @@
 mod dataclasses;
-
+mod text;
 use dataclasses::GameState;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use sdl2::pixels::Color;
 use sdl2::rect::{Point, Rect};
-use sdl2::render::{WindowCanvas};
+use sdl2::render::{Texture, WindowCanvas};
+use sdl2::sys::ttf;
 use sdl2::video::{Window, WindowContext};
+
 
 use rand::prelude::*;
 use std::collections::VecDeque;
 use std::time::Duration;
+use std::path::Path;
 
 use crate::dataclasses::{Direction, Food, GameContext, Position, Snake};
 use crate::dataclasses::{GRID_SIZE_PX, W, H};
+
+use crate::text::{load_font, create_text_texture};
 
 // fn draw_square<R: Into<Option<Color>>>(canvas: &mut WindowCanvas, pos: &Position, color: R) -> Result<(), String> {
 fn draw_square(canvas: &mut WindowCanvas, pos: &Position) -> Result<(), String> {
@@ -41,7 +46,8 @@ fn draw_square(canvas: &mut WindowCanvas, pos: &Position) -> Result<(), String> 
     Ok(())
 }
 
-fn render(canvas: &mut WindowCanvas, game_context: &GameContext) -> Result<(), String> {
+fn render(canvas: &mut WindowCanvas, game_context: &GameContext, texture: &Texture) -> Result<(), String> {
+
     canvas.set_draw_color(Color::RGB(184, 196, 2));
     canvas.clear();
 
@@ -55,7 +61,8 @@ fn render(canvas: &mut WindowCanvas, game_context: &GameContext) -> Result<(), S
     draw_square(canvas, &game_context.food.position)?;
 
     if game_context.state == GameState::GameOver {
-        
+        let screen_rect = Rect::new(0,0, 200, 100);
+        canvas.copy(texture, None, screen_rect)?;
     }
 
     canvas.present();
@@ -174,6 +181,12 @@ fn main() -> Result<(), String> {
         .into_canvas()
         .build()
         .expect("Could not make a canvas!");
+    let texture_creator = canvas.texture_creator();
+
+    let ttf_context = sdl2::ttf::init().map_err(|e| e.to_string())?;
+    let path: &Path = Path::new("./assets/Minecraft.ttf");
+    let font = load_font(path, &ttf_context)?;
+    let game_over_text_texture = create_text_texture(&font, "Game Over".to_string(), &texture_creator)?;
 
     let mut game_context = GameContext::new();
 
@@ -243,7 +256,7 @@ fn main() -> Result<(), String> {
         game_context = update_game_state(game_context, event_queue);
 
         // Render
-        render(&mut canvas, &game_context)?;
+        render(&mut canvas, &game_context, &game_over_text_texture)?;
 
         // Time Management
         ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / game_context.speed));
