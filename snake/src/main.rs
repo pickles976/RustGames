@@ -1,5 +1,6 @@
 mod structs;
 mod text;
+mod colors;
 
 use structs::{GameState, TextMap, TextureRect};
 use sdl2::event::Event;
@@ -17,11 +18,12 @@ use crate::structs::{Direction, GameContext, Position, Snake};
 use crate::structs::{GRID_SIZE_PX, W, H};
 
 use crate::text::{load_font, create_text_texture};
+use crate::colors::{PUKE_GREEN, DARK_GREEN};
 
 fn draw_square(canvas: &mut WindowCanvas, pos: &Position) -> Result<(), String> {
     
     // Fill rect
-    canvas.set_draw_color(Color::RGB(111, 97, 0));
+    canvas.set_draw_color(DARK_GREEN);
     canvas.fill_rect(Rect::new(
         ((pos.x % W) * GRID_SIZE_PX) as i32,
         ((pos.y % H) * GRID_SIZE_PX) as i32,
@@ -30,7 +32,7 @@ fn draw_square(canvas: &mut WindowCanvas, pos: &Position) -> Result<(), String> 
     ))?;
 
     // Separate rects
-    canvas.set_draw_color(Color::RGB(184, 196, 2));
+    canvas.set_draw_color(PUKE_GREEN);
     canvas.draw_rect(Rect::new(
         ((pos.x % W) * GRID_SIZE_PX) as i32,
         ((pos.y % H) * GRID_SIZE_PX) as i32,
@@ -42,7 +44,7 @@ fn draw_square(canvas: &mut WindowCanvas, pos: &Position) -> Result<(), String> 
 
 fn render_gameplay(canvas: &mut WindowCanvas, game_context: &GameContext) -> Result<(), String> {
 
-    canvas.set_draw_color(Color::RGB(184, 196, 2));
+    canvas.set_draw_color(PUKE_GREEN);
     canvas.clear();
 
     for pos in game_context.snake.positions.iter() {
@@ -61,7 +63,7 @@ fn render_gameplay(canvas: &mut WindowCanvas, game_context: &GameContext) -> Res
 
 fn render_gameover(canvas: &mut WindowCanvas, text_map: &TextMap) -> Result<(), String> {
 
-    canvas.set_draw_color(Color::RGB(184, 196, 2));
+    canvas.set_draw_color(PUKE_GREEN);
     canvas.clear();
 
     canvas.copy(&text_map.game_over_text.texture, None, text_map.game_over_text.rect)?;

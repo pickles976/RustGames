@@ -1,8 +1,7 @@
 extern crate sdl2;
 
 use std::path::Path;
-
-use sdl2::pixels::Color;
+use crate::colors::{DARK_GREEN};
 use sdl2::rect::Rect;
 use sdl2::render::{Texture, WindowCanvas, TextureCreator};
 use sdl2::ttf::{Font, Sdl2TtfContext};
@@ -28,7 +27,7 @@ pub fn create_text_texture<'a, T>(font: &Font, text: String, texture_creator: &'
         // render a surface, and convert it to a texture bound to the canvas
         let surface = font
         .render(&text)
-        .blended(Color::RGBA(111, 97, 0, 255))
+        .blended(DARK_GREEN)
         .map_err(|e| e.to_string())?;
     let texture = texture_creator
         .create_texture_from_surface(&surface)
