@@ -1,6 +1,9 @@
 use std::collections::VecDeque;
 use rand::prelude::*;
 
+use sdl2::rect::Rect;
+use sdl2::render::Texture;
+
 pub const GRID_SIZE_PX: i32 = 32;
 pub const H: i32 = 16;
 pub const W: i32 = 16;
@@ -77,4 +80,14 @@ impl GameContext {
             state: GameState::Running
         }
     }
+}
+
+pub struct TextureRect<'a> {
+    pub texture: Texture<'a>,
+    pub rect: Rect
+}
+
+pub struct TextMap<'a> {
+    pub game_over_text: TextureRect<'a>,
+    pub continue_text: TextureRect<'a>
 }
