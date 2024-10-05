@@ -21,7 +21,7 @@ Requirements:
 		- [x] Show game over text (Press enter to continue)
 		- [x] create a texture map struct that holds all of our textures
 		- [x] handle new game input
-	- [ ] Score text
+	- [ ] see if we can compile to wasm
 	- [ ] Implement Pausing
 	- [ ] sound effects
 - [ ] create tetris
