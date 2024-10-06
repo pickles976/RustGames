@@ -1,10 +1,14 @@
 extern crate sdl2;
 
 use std::path::Path;
-use crate::colors::{DARK_GREEN};
 use sdl2::rect::Rect;
-use sdl2::render::{Texture, WindowCanvas, TextureCreator};
 use sdl2::ttf::{Font, Sdl2TtfContext};
+use sdl2::render::{Texture, TextureCreator};
+
+use crate::colors::DARK_GREEN;
+use crate::structs::GRID_SIZE_PX;
+
+
 
 // handle the annoying Rect i32
 #[macro_export]
@@ -12,6 +16,19 @@ macro_rules! rect {
     ($x:expr, $y:expr, $w:expr, $h:expr) => {
         Rect::new($x as i32, $y as i32, $w as u32, $h as u32)
     };
+}
+
+pub fn get_rect_for_lines(start_column: i32, start_row: i32, end_column: i32, end_row: i32) -> Rect {
+
+    let width : i32 = (end_column - start_column) * GRID_SIZE_PX;
+    let height : i32 = (end_row - start_row) * GRID_SIZE_PX;
+
+    rect!(
+        start_column * GRID_SIZE_PX,
+        start_row * GRID_SIZE_PX,
+        width,
+        height
+    )
 }
 
 pub fn load_font<'a>(font_path: &'a Path, ttf_context: &'a Sdl2TtfContext) -> Result<Font<'a, 'a>, String> {

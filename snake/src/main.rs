@@ -2,10 +2,9 @@ mod structs;
 mod text;
 mod colors;
 
-use structs::{GameState, TextMap, TextureRect};
+use structs::{GameState, TextMap};
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
-use sdl2::pixels::Color;
 use sdl2::rect::Rect;
 use sdl2::render::WindowCanvas;
 
@@ -15,29 +14,28 @@ use std::time::Duration;
 use std::path::Path;
 
 use crate::structs::{Direction, GameContext, Position, Snake};
-use crate::structs::{GRID_SIZE_PX, W, H};
-
-use crate::text::{load_font, create_text_texture};
+use crate::structs::{GRID_SIZE_PX, W, H, INIT_SPEED};
 use crate::colors::{PUKE_GREEN, DARK_GREEN};
+use crate::text::load_font;
 
 fn draw_square(canvas: &mut WindowCanvas, pos: &Position) -> Result<(), String> {
     
     // Fill rect
     canvas.set_draw_color(DARK_GREEN);
-    canvas.fill_rect(Rect::new(
-        ((pos.x % W) * GRID_SIZE_PX) as i32,
-        ((pos.y % H) * GRID_SIZE_PX) as i32,
+    canvas.fill_rect(rect!(
+        (pos.x % W) * GRID_SIZE_PX,
+        (pos.y % H) * GRID_SIZE_PX,
         GRID_SIZE_PX as u32,
-        GRID_SIZE_PX as u32,
+        GRID_SIZE_PX as u32
     ))?;
 
     // Separate rects
     canvas.set_draw_color(PUKE_GREEN);
-    canvas.draw_rect(Rect::new(
-        ((pos.x % W) * GRID_SIZE_PX) as i32,
-        ((pos.y % H) * GRID_SIZE_PX) as i32,
+    canvas.draw_rect(rect!(
+        (pos.x % W) * GRID_SIZE_PX,
+        (pos.y % H) * GRID_SIZE_PX,
         GRID_SIZE_PX as u32,
-        GRID_SIZE_PX as u32,
+        GRID_SIZE_PX as u32
     ))?;
     Ok(())
 }
@@ -54,7 +52,6 @@ fn render_gameplay(canvas: &mut WindowCanvas, game_context: &GameContext) -> Res
 
     // Draw food
     draw_square(canvas, &game_context.food.position)?;
-
 
     canvas.present();
 
@@ -94,12 +91,12 @@ fn update_snake_position(mut snake: Snake) -> Snake {
             head = head.offset(0, 1);
         }
     }
-    snake.positions.pop_front();
-    snake.positions.push_back(head);
+    snake.positions.pop_front(); // Remove tail
+    snake.positions.push_back(head); // Push new head
     snake
 }
 
-fn update_game_state(mut game_context: GameContext, mut event_queue: VecDeque<Direction>) -> GameContext {
+fn update_game_context(mut game_context: GameContext, mut event_queue: VecDeque<Direction>) -> GameContext {
 
     // Check if Snake out of bounds
     for pos in game_context.snake.positions.iter() {
@@ -126,7 +123,6 @@ fn update_game_state(mut game_context: GameContext, mut event_queue: VecDeque<Di
         }
     }
 
-
     // Check if food has overlap with snake
     if game_context.snake.positions.contains(&game_context.food.position) {
         // Add new snake box
@@ -139,6 +135,7 @@ fn update_game_state(mut game_context: GameContext, mut event_queue: VecDeque<Di
     // Get most recent input event
     match event_queue.pop_back() {
         Some(direction) => {
+            // Dont allow the snake to turn in on itself
             match direction {
                 Direction::Down => {
                     if game_context.snake.direction != Direction::Up {
@@ -165,7 +162,7 @@ fn update_game_state(mut game_context: GameContext, mut event_queue: VecDeque<Di
         _none => {}
     }
     game_context.snake = update_snake_position(game_context.snake);
-    game_context.speed = 5 + (game_context.snake.positions.len() / 3) as u32;
+    game_context.speed = INIT_SPEED + (game_context.snake.positions.len() / 3) as u32; // Increase speed with length
     game_context
 }
 
@@ -189,31 +186,11 @@ fn main() -> Result<(), String> {
         .expect("Could not make a canvas!");
     let texture_creator = canvas.texture_creator();
 
+    // Load textures with our text in them
     let ttf_context = sdl2::ttf::init().map_err(|e| e.to_string())?;
-    let path: &Path = Path::new("./assets/Minecraft.ttf");
+    let path: &Path = Path::new("./assets/retro_computer_personal_use.ttf");
     let font = load_font(path, &ttf_context)?;
-
-    // TODO: how can I make this cleaner?
-    let textmap = TextMap {
-        game_over_text: TextureRect {
-            texture: create_text_texture(&font, "Game Over".to_string(), &texture_creator)?,
-            rect: rect!(
-                GRID_SIZE_PX * W / 8, 
-                GRID_SIZE_PX * H / 8, 
-                3 * GRID_SIZE_PX * W / 4, 
-                GRID_SIZE_PX * H / 3
-            )
-        },
-        continue_text: TextureRect {
-            texture: create_text_texture(&font, "Press Enter to Contine".to_string(), &texture_creator)?,
-            rect: rect!(
-                GRID_SIZE_PX * W / 8, 
-                GRID_SIZE_PX * H / 2, 
-                3 * GRID_SIZE_PX * W / 4, 
-                GRID_SIZE_PX * H / 4
-            )
-        }
-    };
+    let textmap = TextMap::new(&font, &texture_creator)?;
 
     let mut game_context = GameContext::new();
 
@@ -290,7 +267,7 @@ fn main() -> Result<(), String> {
 
         // Update
         match game_context.state {
-            GameState::Running => {game_context = update_game_state(game_context, event_queue);},
+            GameState::Running => {game_context = update_game_context(game_context, event_queue);},
             GameState::GameOver => {}
         }
 

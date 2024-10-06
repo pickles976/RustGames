@@ -21,7 +21,10 @@ Requirements:
 		- [x] Show game over text (Press enter to continue)
 		- [x] create a texture map struct that holds all of our textures
 		- [x] handle new game input
+	- [x] clean up a bit
 	- [ ] see if we can compile to wasm
+		- [ ] https://github.com/awwsmm/hello-rust-sdl2-wasm
+	- [ ] add line printing text
 	- [ ] Implement Pausing
 	- [ ] sound effects
 - [ ] create tetris
