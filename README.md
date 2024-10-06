@@ -7,7 +7,7 @@ Requirements:
 
 ### TODO:
 - [x] https://sunjay.dev/learn-game-dev/getting-started.html
-- [ ] create snake game
+- [x] create snake game
 	- [x] Get moving head
 	- [x] Get drawing working
 	- [x] Get food spawning
@@ -22,10 +22,6 @@ Requirements:
 		- [x] create a texture map struct that holds all of our textures
 		- [x] handle new game input
 	- [x] clean up a bit
-	- [ ] see if we can compile to wasm
-		- [ ] https://github.com/awwsmm/hello-rust-sdl2-wasm
-	- [ ] add line printing text
-	- [ ] Implement Pausing
-	- [ ] sound effects
+	- [x] add line printing text
 - [ ] create tetris
 - [ ] 3D demo
